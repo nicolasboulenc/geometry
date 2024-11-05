@@ -1,0 +1,179 @@
+<html>
+	<head>
+		<style>
+			body {
+				background-color: darkgray;
+			}
+		</style>
+	</head>
+	<body>
+		<script>
+			"use strict";
+			const ns = 'http://www.w3.org/2000/svg'
+			const width = 800;
+			const height = 1200;
+			const bg_color = 'white'
+			const fg_color = 'blue'
+			const radius = 20;
+
+			let ref_node = null;
+			let lines = [];
+			let is_button_down = false;
+
+			let password = "741254";
+			let input = "";
+
+			const svg = Create_SVG(width, height);
+			document.body.appendChild(svg);
+
+			setup();
+
+			function setup() {
+
+				let circle = Create_Circle(200, 400, radius, 1);
+				ref_node = circle;
+				svg.appendChild(circle);
+
+				circle = Create_Circle(400, 400, radius, 2);
+				svg.appendChild(circle);
+
+				circle = Create_Circle(600, 400, radius, 3);
+				svg.appendChild(circle);
+
+				circle = Create_Circle(200, 600, radius, 4);
+				svg.appendChild(circle);
+
+				circle = Create_Circle(400, 600, radius, 5);
+				svg.appendChild(circle);
+
+				circle = Create_Circle(600, 600, radius, 6);
+				svg.appendChild(circle);
+
+				circle = Create_Circle(200, 800, radius, 7);
+				svg.appendChild(circle);
+
+				circle = Create_Circle(400, 800, radius, 8);
+				svg.appendChild(circle);
+
+				circle = Create_Circle(600, 800, radius, 9);
+				svg.appendChild(circle);
+			}
+
+			function reset() {
+				input = "";
+				for(const line of lines) {
+					svg.removeChild(line);
+				}
+				lines = [];
+			}
+
+			function Create_SVG(width, height) {
+				const svg = document.createElementNS(ns, 'svg');
+				svg.setAttributeNS(null, 'viewbox', `0 0 ${width} ${height}`);
+				svg.setAttributeNS(null, 'width', width);
+				svg.setAttributeNS(null, 'height', height);
+				svg.style.backgroundColor = bg_color;
+				svg.style.display = 'block';
+				svg.onmousemove = SVG_Mouse_Move;
+				svg.onmouseup = SVG_Mouse_Up;
+				return svg;
+			}
+
+			function Create_Circle(x, y, r, id) {
+				const elem = document.createElementNS(ns, 'circle');
+				elem.setAttributeNS(null, 'cx', x);
+				elem.setAttributeNS(null, 'cy', y);
+				elem.setAttributeNS(null, 'r', r);
+				elem.setAttributeNS(null, 'fill', fg_color);
+				elem.setAttributeNS(null, 'id', id);
+				elem.onmousemove = Circle_Mouse_Move;
+				elem.onmousedown = Circle_Mouse_Down;
+				elem.onmouseup = Circle_Mouse_Up;
+				return elem;
+			}
+
+			function Create_Line(x1, y1, x2, y2) {
+				const elem = document.createElementNS(ns, 'line');
+				elem.setAttributeNS(null, 'x1', x1);
+				elem.setAttributeNS(null, 'y1', y1);
+				elem.setAttributeNS(null, 'x2', x2);
+				elem.setAttributeNS(null, 'y2', y2);
+				elem.setAttributeNS(null, 'stroke', fg_color);
+				elem.setAttributeNS(null, 'stroke-width', 15);
+				elem.setAttributeNS(null, 'stroke-linecap', 'round');
+				return elem;
+			}
+
+			function SVG_Mouse_Up(evt) {
+				if(evt.button === 0) {
+					// is_button_down = false;
+					if(input !== "") {
+						if(input === password) {
+							console.log("unlocked");
+						}
+						else {
+							console.log("locked");
+						}
+					}
+					reset();
+				}
+			}
+
+			function SVG_Mouse_Move(evt) {
+				if(evt.button === 0 && evt.buttons === 1 && lines.length > 0) {
+				// if(is_button_down === true && lines.length > 0) {
+					// draw line
+					const current_line = lines[lines.length - 1];
+					current_line.setAttributeNS(null, 'x2', evt.clientX);
+					current_line.setAttributeNS(null, 'y2', evt.clientY);
+				}
+			}
+
+			function Circle_Mouse_Down(evt) {
+				if(evt.button === 0) {
+					// start
+					is_button_down = true;
+					const x = evt.target.getAttributeNS(null, 'cx');
+					const y = evt.target.getAttributeNS(null, 'cy');
+					const current_line = Create_Line(x, y, evt.clientX, evt.clientY);
+					svg.insertBefore(current_line, ref_node);
+					lines.push(current_line);
+				}
+			}
+
+			function Circle_Mouse_Up(evt) {
+				if(evt.button === 0) {
+					// end
+					if(input === password) {
+						console.log("unlocked");
+						// location.href = "Page_to_be_unlocked.html";
+					}
+					else {
+						console.log("locked");
+					}
+					reset();
+				}
+			}
+
+			function Circle_Mouse_Move(evt) {
+				if(evt.button === 0 && evt.buttons === 1) {
+					// connect
+					const x = evt.target.getAttributeNS(null, 'cx');
+					const y = evt.target.getAttributeNS(null, 'cy');
+					let current_line = lines[lines.length - 1];
+					current_line.setAttributeNS(null, 'x2', x);
+					current_line.setAttributeNS(null, 'y2', y);
+
+					current_line = Create_Line(x, y, evt.clientX, evt.clientY);
+					svg.insertBefore(current_line, ref_node);
+					lines.push(current_line);
+
+					const id = evt.target.getAttributeNS(null, 'id');
+					if(input[input.length - 1] !== id) {
+						input += id;
+					}
+				}
+			}
+		</script>
+	</body>
+</html>
